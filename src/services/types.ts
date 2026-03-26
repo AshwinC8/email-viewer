@@ -56,6 +56,9 @@ export interface NormalizedEmail {
   // Attachment metadata (for future use)
   hasAttachments: boolean;
   attachments: AttachmentMeta[];
+
+  // Raw Gmail API response (for export)
+  rawGmail?: GmailMessageResponse;
 }
 
 // ============================================

@@ -69,21 +69,21 @@ function ThreadHeader({ thread, onClose }: ThreadHeaderProps) {
   const isEml = thread.labels.includes('EML');
 
   const handleExportJson = () => {
+    // Export raw Gmail API responses for each message
+    const rawGmailMessages = thread.messages
+      .map(msg => msg.rawGmail)
+      .filter(Boolean);
+
     const exportData = {
       threadId: thread.threadId,
-      subject: thread.subject,
-      participants: thread.participants,
-      messageCount: thread.messageCount,
-      firstMessageDate: thread.firstMessageDate,
-      lastMessageDate: thread.lastMessageDate,
-      messages: thread.messages,
+      messages: rawGmailMessages,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `thread-${thread.threadId}.json`;
+    a.download = `gmail-thread-${thread.threadId}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

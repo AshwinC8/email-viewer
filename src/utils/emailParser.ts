@@ -256,6 +256,7 @@ export function parseGmailMessage(raw: GmailMessageResponse): NormalizedEmail {
     references,
     hasAttachments: attachments.length > 0,
     attachments,
+    rawGmail: raw, // Store original Gmail API response
   };
 }
 
