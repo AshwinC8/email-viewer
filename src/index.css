@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* Custom styles for email content */
+.email-content {
+  @apply text-gray-700;
+}
+
+.email-content a {
+  @apply text-blue-600 hover:underline;
+}
+
+.email-content img {
+  @apply max-w-full h-auto;
+}
+
+.email-content blockquote {
+  @apply border-l-4 border-gray-300 pl-4 my-4 text-gray-600 italic;
+}
+
+.email-content pre {
+  @apply bg-gray-100 p-3 rounded overflow-x-auto text-sm;
+}
+
+.email-content code {
+  @apply bg-gray-100 px-1 py-0.5 rounded text-sm;
+}
+
+.email-content table {
+  @apply w-full border-collapse my-4;
+}
+
+.email-content th,
+.email-content td {
+  @apply border border-gray-300 px-3 py-2 text-left;
+}
+
+.email-content th {
+  @apply bg-gray-100 font-medium;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Focus visible styles */
+*:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
