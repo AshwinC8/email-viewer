@@ -22,6 +22,7 @@ import {
   Clock,
   Users,
   FileText,
+  Download,
 } from 'lucide-react';
 import { NormalizedEmail, EmailThread, EmailParticipant } from '../../services/types';
 
@@ -66,7 +67,29 @@ interface ThreadHeaderProps {
 
 function ThreadHeader({ thread, onClose }: ThreadHeaderProps) {
   const isEml = thread.labels.includes('EML');
-  
+
+  const handleExportJson = () => {
+    const exportData = {
+      threadId: thread.threadId,
+      subject: thread.subject,
+      participants: thread.participants,
+      messageCount: thread.messageCount,
+      firstMessageDate: thread.firstMessageDate,
+      lastMessageDate: thread.lastMessageDate,
+      messages: thread.messages,
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `thread-${thread.threadId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="border-b border-gray-200 px-4 py-3">
       {/* Subject and close */}
@@ -81,12 +104,23 @@ function ThreadHeader({ thread, onClose }: ThreadHeaderProps) {
             {thread.subject}
           </h2>
         </div>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-        >
-          <X className="w-5 h-5 text-gray-500" />
-        </button>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {!isEml && (
+            <button
+              onClick={handleExportJson}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Export thread as JSON"
+            >
+              <Download className="w-5 h-5 text-gray-500" />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
       </div>
       
       {/* Thread metadata */}
