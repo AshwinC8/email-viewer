@@ -66,28 +66,40 @@ interface ThreadHeaderProps {
 }
 
 function ThreadHeader({ thread, onClose }: ThreadHeaderProps) {
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const isEml = thread.labels.includes('EML');
 
-  const handleExportJson = () => {
-    // Export raw Gmail API responses for each message
-    const rawGmailMessages = thread.messages
-      .map(msg => msg.rawGmail)
-      .filter(Boolean);
-
-    const exportData = {
-      threadId: thread.threadId,
-      messages: rawGmailMessages,
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const downloadJson = (data: object, filename: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `gmail-thread-${thread.threadId}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setShowExportMenu(false);
+  };
+
+  const handleExportRaw = () => {
+    const rawGmailMessages = thread.messages
+      .map(msg => msg.rawGmail)
+      .filter(Boolean);
+    downloadJson({ threadId: thread.threadId, messages: rawGmailMessages }, `gmail-raw-${thread.threadId}.json`);
+  };
+
+  const handleExportNormalized = () => {
+    const exportData = {
+      threadId: thread.threadId,
+      subject: thread.subject,
+      participants: thread.participants,
+      messageCount: thread.messageCount,
+      firstMessageDate: thread.firstMessageDate,
+      lastMessageDate: thread.lastMessageDate,
+      messages: thread.messages.map(({ rawGmail, ...rest }) => rest),
+    };
+    downloadJson(exportData, `gmail-normalized-${thread.threadId}.json`);
   };
 
   return (
@@ -106,13 +118,31 @@ function ThreadHeader({ thread, onClose }: ThreadHeaderProps) {
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           {!isEml && (
-            <button
-              onClick={handleExportJson}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Export thread as JSON"
-            >
-              <Download className="w-5 h-5 text-gray-500" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Export thread as JSON"
+              >
+                <Download className="w-5 h-5 text-gray-500" />
+              </button>
+              {showExportMenu && (
+                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[160px]">
+                  <button
+                    onClick={handleExportRaw}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 rounded-t-lg"
+                  >
+                    Raw Gmail JSON
+                  </button>
+                  <button
+                    onClick={handleExportNormalized}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 rounded-b-lg border-t border-gray-100"
+                  >
+                    Normalized JSON
+                  </button>
+                </div>
+              )}
+            </div>
           )}
           <button
             onClick={onClose}
