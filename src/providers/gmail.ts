@@ -169,15 +169,12 @@ export class GmailProvider implements EmailProvider {
         if (!response.ok) continue;
         
         const threadData: GmailThreadResponse = await response.json();
-        
-        // Parse each message in the thread
+
+        // Parse ALL messages in the thread (not just selected ones)
         for (const gmailMsg of threadData.messages) {
-          // Only include if it was selected
-          if (ids.includes(gmailMsg.id)) {
-            const normalized = parseGmailMessage(gmailMsg);
-            messages.push(normalized);
-            this.cachedMessages.set(gmailMsg.id, normalized);
-          }
+          const normalized = parseGmailMessage(gmailMsg);
+          messages.push(normalized);
+          this.cachedMessages.set(gmailMsg.id, normalized);
         }
       } catch (error) {
         console.error(`Failed to fetch thread ${threadId}:`, error);
