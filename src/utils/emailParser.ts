@@ -20,6 +20,7 @@ import {
   EmailParticipant,
   AttachmentMeta,
   EmailThread,
+  MessageTreeNode,
 } from '../services/types';
 
 // ============================================
@@ -377,4 +378,65 @@ export function formatParticipants(
   const remaining = names.length - maxShow;
   
   return `${shown.join(', ')} +${remaining} others`;
+}
+
+// ============================================
+// Message Tree Builder
+// ============================================
+
+/**
+ * Build a tree structure from messages using messageId and inReplyTo
+ * Returns array of root nodes (messages without inReplyTo or orphans)
+ */
+export function buildMessageTree(messages: NormalizedEmail[]): MessageTreeNode[] {
+  // Create a map of messageId -> message for quick lookup
+  const messageMap = new Map<string, NormalizedEmail>();
+  for (const msg of messages) {
+    if (msg.messageId) {
+      messageMap.set(msg.messageId, msg);
+    }
+  }
+
+  // Create nodes for all messages
+  const nodeMap = new Map<string, MessageTreeNode>();
+  for (const msg of messages) {
+    nodeMap.set(msg.id, {
+      message: msg,
+      children: [],
+    });
+  }
+
+  // Build tree relationships
+  const roots: MessageTreeNode[] = [];
+
+  for (const msg of messages) {
+    const node = nodeMap.get(msg.id)!;
+
+    // Find parent by inReplyTo
+    if (msg.inReplyTo) {
+      const parentMsg = messageMap.get(msg.inReplyTo);
+      if (parentMsg) {
+        const parentNode = nodeMap.get(parentMsg.id);
+        if (parentNode) {
+          parentNode.children.push(node);
+          continue; // Successfully linked to parent
+        }
+      }
+    }
+
+    // No inReplyTo or parent not found - this is a root
+    roots.push(node);
+  }
+
+  // Sort children by date (oldest first)
+  function sortChildren(node: MessageTreeNode) {
+    node.children.sort((a, b) => a.message.internalDate - b.message.internalDate);
+    node.children.forEach(sortChildren);
+  }
+
+  // Sort roots by date and their children
+  roots.sort((a, b) => a.message.internalDate - b.message.internalDate);
+  roots.forEach(sortChildren);
+
+  return roots;
 }

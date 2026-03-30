@@ -73,6 +73,15 @@ export interface AttachmentMeta {
 }
 
 // ============================================
+// Message Tree Node (for hierarchical view)
+// ============================================
+
+export interface MessageTreeNode {
+  message: NormalizedEmail;
+  children: MessageTreeNode[];
+}
+
+// ============================================
 // Email Thread (Grouped Conversation)
 // ============================================
 
